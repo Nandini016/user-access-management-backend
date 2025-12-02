@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:15
@@ -15,7 +13,7 @@ services:
 
 
   backend:
-    build: .
+    image: saurabh896/user-management:latest
     container_name: usermgmt-backend
     depends_on:
       postgres:
