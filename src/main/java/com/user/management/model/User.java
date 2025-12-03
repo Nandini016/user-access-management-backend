@@ -28,7 +28,7 @@ public class User {
     // NEW: whether the admin has approved this user or not
     @Setter
     @Column(nullable = false)
-    private boolean approved = false;  // default: false for newly registered users
+    private boolean approved ; // default: false for newly registered users
 
     public Long getId() {
         return id;

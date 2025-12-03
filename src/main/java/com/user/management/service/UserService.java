@@ -5,6 +5,8 @@ import com.user.management.dto.LoginRequest;
 import com.user.management.dto.LoginResponse;
 import com.user.management.dto.RegisterRequest;
 import com.user.management.dto.UserResponse;
+import com.user.management.model.Role;
+import com.user.management.model.RoleType;
 import com.user.management.model.User;
 import com.user.management.repository.CompanyRepository;
 import com.user.management.repository.RoleRepository;
@@ -26,16 +28,28 @@ public class UserService {
     @Autowired private JwtUtil jwtUtil;
 
     public UserResponse register(RegisterRequest req) {
+
         User user = new User();
         user.setEmail(req.getEmail());
         user.setPassword(new BCryptPasswordEncoder().encode(req.getPassword()));
-        user.setCompany(companyRepo.findById(req.getCompanyId()).orElseThrow());
-        user.setRole(roleRepo.findById(req.getRoleId()).orElseThrow());
-        user.setApproved(false); // pending
-        userRepo.save(user);
+        user.setCompany(
+                companyRepo.findById(req.getCompanyId())
+                        .orElseThrow(() -> new RuntimeException("Company not found"))
+        );
+        Role userRole = roleRepo.findByName(RoleType.USER)
+                .orElseThrow(() -> new RuntimeException("USER role not found in database"));
 
-        return new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.getCompany());
+        user.setRole(userRole);
+        user.setApproved(false);
+        userRepo.save(user);
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getCompany()
+        );
     }
+
 
 
     public LoginResponse login(LoginRequest req) {
