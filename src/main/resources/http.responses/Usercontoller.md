@@ -5,7 +5,7 @@
 ### ✅ Request Details
 
 - **Type**: POST
-- **URL**: http://localhost:8080/api/users/register
+- **URL**: `http://localhost:8080/api/users/register`
 - **Request Name**: Register User
 
 ### 📤 Request Body (JSON)
@@ -41,7 +41,7 @@
 ### ✅ Request Details
 
 - **Type**: POST
-- **URL**: http://localhost:8080/api/users/login
+- **URL**: `http://localhost:8080/api/users/login`
 - **Request Name**: Login
 
 ### 📤 Request Body (JSON)
@@ -65,7 +65,7 @@
 ### ✅ Request Details
 
 - **Type**: GET
-- **URL**: http://localhost:8080/api/users
+- **URL**: `http://localhost:8080/api/users`
 - **Request Name**: Get Timeline
   ### 📤 Response Body (JSON)
 ```json

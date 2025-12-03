@@ -64,18 +64,29 @@
 - **Request Name**: Admin – Create Users
 ### 📤 Request Body (JSON)
 ```json
-
-### 📤 Request Body (JSON)
-```json
 {
-
+  "email": "newuser@example.com",
+  "password": "Password@123",
+  "companyId": 2
 }
+
+
 ```
 ### 📤 Response Body (JSON)
 ```json
 {
-  
-  
+  "id": 5,
+  "email": "newuser@example.com",
+  "password": "$2a$10$7inKAXMJa4hSTf1VcLt7MuKUaGaqm9PR0Y8z7Q37KaBavYOMtRGOG",
+  "role": {
+    "id": 3,
+    "name": "USER"
+  },
+  "company": {
+    "id": 2,
+    "name": "GlobalTech Solutions"
+  },
+  "approved": true
 }
 ```
 - **Response Status**: 200 OK
