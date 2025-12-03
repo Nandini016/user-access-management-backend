@@ -1,24 +1,13 @@
 package com.user.management.dto;
 
+import lombok.Data;
+
+@Data
 public class RegisterRequest {
-    public String email;
-    public String password;
-    public Long companyId;
-    public Long roleId;
 
-    public String getEmail() {
-        return email;
-    }
+    private String email;
+    private String password;
+    private Long companyId;
 
-    public String getPassword() {
-        return password;
-    }
 
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public Long getRoleId() {
-        return roleId;
-    }
 }
