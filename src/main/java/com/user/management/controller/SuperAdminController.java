@@ -20,10 +20,6 @@ public class SuperAdminController {
     @Autowired
     private SchemaService schemaService;
 
-    @GetMapping
-    public List<Company> listCompanies() {
-        return companyRepo.findAll();
-    }
 
     @PostMapping
     public Company createCompany(@RequestBody Company company) {
