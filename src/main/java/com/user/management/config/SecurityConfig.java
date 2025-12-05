@@ -48,7 +48,11 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/users/register",
                                 "/v3/api-docs/**",
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/swagger/**",
+                                "/webjars/**",
                                 "/actuator/**"
                         ).permitAll()
                         // OAuth2-related endpoints should be public
@@ -130,7 +134,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
