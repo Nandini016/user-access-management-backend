@@ -28,7 +28,7 @@ public class UserAdminController {
 
     @GetMapping
     public List<User> listUsers() {
-        return userRepo.findAll();
+        return userRepo.findAllUsersOrderByCreatedAtDesc();
     }
 
     @PostMapping
@@ -67,15 +67,18 @@ public class UserAdminController {
 
     @GetMapping("/pending")
     public List<User> listPendingUsers() {
-        return userRepo.findByApprovedFalse();
+        return userRepo.findPendingUsersOrderByCreatedAtDesc();
     }
 
     @PutMapping("/{id}/approve")
-    public User approveUser(@PathVariable Long id) {
+    public User approveUser(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean approve) {
         User user = userRepo.findById(id).orElseThrow();
-        user.setApproved(true);
+        user.setApproved(approve);
         return userRepo.save(user);
     }
+
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {

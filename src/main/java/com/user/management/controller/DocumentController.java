@@ -2,6 +2,7 @@ package com.user.management.controller;
 
 import com.user.management.dto.DocumentMetadata;
 import com.user.management.model.Document;
+import com.user.management.repository.DocumentRepository;
 import com.user.management.service.DocumentService;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -15,15 +16,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/companies/{companyId}/documents")
 public class DocumentController {
 
     private final DocumentService docService;
+    private final DocumentRepository documentRepo;
 
-    public DocumentController(DocumentService docService)
-    { this.docService = docService; }
+    public DocumentController(DocumentService docService,DocumentRepository documentRepo)
+    { this.docService = docService;
+        this.documentRepo = documentRepo;
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(@PathVariable Long companyId,
@@ -35,8 +40,20 @@ public class DocumentController {
 
     @GetMapping
     public List<DocumentMetadata> list(@PathVariable Long companyId) {
-        return docService.list(companyId);
+
+        return documentRepo.findByCompanyIdOrderByUploadedAtDesc(companyId)
+                .stream()
+                .map(d -> new DocumentMetadata(
+                        d.getId(),
+                        d.getFilename(),
+                        d.getContentType(),
+                        d.getSize(),
+                        d.getUploadedAt(),
+                        d.getUploadedByUserId()
+                ))
+                .collect(Collectors.toList());
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Resource> download(@PathVariable Long companyId, @PathVariable Long id) throws IOException {

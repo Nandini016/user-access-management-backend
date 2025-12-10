@@ -54,7 +54,7 @@ public class UserController {
 
     @GetMapping("/companies")
     public List<Company> listCompanies() {
-        return companyRepo.findAll();
+        return companyRepo.findAllCompaniesOrderByCreatedAtDesc();
     }
 
     @GetMapping

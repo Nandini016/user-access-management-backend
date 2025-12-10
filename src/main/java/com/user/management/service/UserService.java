@@ -69,25 +69,32 @@ public class UserService {
     }
 
     public List<UserResponse> listUsers() {
-        return userRepo.findAll().stream()
+        return userRepo.findAllUsersOrderByCreatedAtDesc().stream()
                 .map(u -> new UserResponse(u.getId(), u.getEmail(), u.getRole(), u.getCompany()))
                 .collect(Collectors.toList());
     }
 
     public List<UserResponse> listPendingUsers() {
-        return userRepo.findByApprovedFalse().stream()
+        return userRepo.findPendingUsersOrderByCreatedAtDesc().stream()
                 .map(u -> new UserResponse(u.getId(), u.getEmail(), u.getRole(), u.getCompany()))
                 .collect(Collectors.toList());
     }
 
 
-    public UserResponse approveUser(Long id) {
+    public UserResponse approveUser(Long id, boolean approve) {
         User user = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.setApproved(true);
+        user.setApproved(approve);
         userRepo.save(user);
 
-        return new UserResponse(user.getId(), user.getEmail(), user.getRole(), user.getCompany());
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getCompany()
+        );
     }
+
 }
+

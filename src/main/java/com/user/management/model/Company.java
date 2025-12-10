@@ -3,6 +3,10 @@ package com.user.management.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Instant;
+
+
+@Data
 @Entity
 @Table(name = "companies")
 public class Company {
@@ -10,16 +14,6 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    @Column(nullable=false, updatable=false)
+    private Instant createdAt;
 }

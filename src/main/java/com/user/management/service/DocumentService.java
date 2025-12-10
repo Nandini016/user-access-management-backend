@@ -149,11 +149,14 @@ public class DocumentService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company not found");
         }
 
-        if (!isSuperAdmin(current) && (current.getCompany() == null || !companyId.equals(current.getCompany().getId()))) {
+        // Authorization check
+        if (!isSuperAdmin(current) &&
+                (current.getCompany() == null || !companyId.equals(current.getCompany().getId()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
         }
 
-        return docRepo.findByCompanyId(companyId)
+        // NEW: Order documents by createdAt DESC (or id DESC if fallback)
+        return docRepo.findByCompanyIdOrderByUploadedAtDesc(companyId)
                 .stream()
                 .map(d -> new DocumentMetadata(
                         d.getId(),
@@ -165,6 +168,7 @@ public class DocumentService {
                 ))
                 .collect(Collectors.toList());
     }
+
 
     // ---------- get file path for download ----------
     public Path getFilePath(Long companyId, Long docId) {
