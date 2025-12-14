@@ -1,13 +1,16 @@
 package com.user.management.controller;
 
 import com.user.management.dto.RegisterRequest;
+import com.user.management.dto.UserResponse;
+import com.user.management.model.Role;
 import com.user.management.model.RoleType;
 import com.user.management.model.User;
-import com.user.management.model.Role;
 import com.user.management.repository.CompanyRepository;
 import com.user.management.repository.RoleRepository;
 import com.user.management.repository.UserRepository;
+import com.user.management.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +26,10 @@ public class UserAdminController {
     private RoleRepository roleRepo;
     @Autowired
     private CompanyRepository companyRepo;
+
+    @Autowired
+    private UserService userService;
+
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -41,8 +48,8 @@ public class UserAdminController {
         // Assign role: since RegisterRequest no longer contains roleId,
         // pick a sensible default role by name (try "USER" then "ROLE_USER"), otherwise fallback to any role.
         Role role = roleRepo.findByName(RoleType.USER)
-                        .orElseGet(() -> roleRepo.findAll().stream().findFirst()
-                                .orElseThrow(() -> new IllegalStateException("No roles configured in the system")));
+                .orElseGet(() -> roleRepo.findAll().stream().findFirst()
+                        .orElseThrow(() -> new IllegalStateException("No roles configured in the system")));
 
         user.setRole(role);
         user.setApproved(true);
@@ -58,8 +65,8 @@ public class UserAdminController {
 
         // same role logic as create: keep existing role if you want, or reassign default if your flow requires it.
         Role role = roleRepo.findByName(RoleType.USER)
-                        .orElseGet(() -> roleRepo.findAll().stream().findFirst()
-                                .orElseThrow(() -> new IllegalStateException("No roles configured in the system")));
+                .orElseGet(() -> roleRepo.findAll().stream().findFirst()
+                        .orElseThrow(() -> new IllegalStateException("No roles configured in the system")));
 
         user.setRole(role);
         return userRepo.save(user);
@@ -78,10 +85,22 @@ public class UserAdminController {
         user.setApproved(approve);
         return userRepo.save(user);
     }
-
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        UserResponse res = userService.getUserById(id);
+        return ResponseEntity.ok(res);
+    }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userRepo.deleteById(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.softDeleteUser(id);
+        return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> permanentDeleteUser(@PathVariable Long id) {
+        userService.hardDeleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

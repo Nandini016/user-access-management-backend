@@ -24,6 +24,11 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
+        String companyName = null;
+        if (user.getCompany() != null) {
+            companyName = user.getCompany().getName();
+        }
+
         return Jwts.builder()
                 .claim("userId", user.getId())
                 .claim("role", user.getRole().getName())

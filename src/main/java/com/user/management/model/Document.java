@@ -1,9 +1,6 @@
 package com.user.management.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 import java.time.Instant;
 
@@ -23,7 +20,17 @@ public class Document {
     private Long uploadedByUserId;  // who uploaded
     private Instant uploadedAt;
     private String description;     // optional
-    private String path;            // file path in storage or s3 key
+    private String path;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.status == null) {
+            this.status = Status.ACTIVE;
+        }
+    }
 
 
 }

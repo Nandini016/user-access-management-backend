@@ -68,9 +68,17 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long companyId, @PathVariable Long id) throws IOException {
-        docService.delete(companyId, id);
+    public ResponseEntity<Void> deleteDocument(@PathVariable Long companyId, @PathVariable Long id) {
+        docService.softDelete(companyId, id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> permanentDeleteDocument(@PathVariable Long companyId, @PathVariable Long id) {
+        docService.hardDelete(companyId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 }
 

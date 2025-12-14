@@ -2,6 +2,7 @@ package com.user.management.service;
 
 import com.user.management.dto.DocumentMetadata;
 import com.user.management.model.Document;
+import com.user.management.model.Status;
 import com.user.management.model.User;
 import com.user.management.repository.CompanyRepository;
 import com.user.management.repository.DocumentRepository;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -88,27 +90,21 @@ public class DocumentService {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File is required");
         }
-
         if (!companyRepo.existsById(companyId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company not found");
         }
-
         User current = getCurrentUser();
-
         // Authorization check: user must be superadmin OR belong to the company
         if (!isSuperAdmin(current) && (current.getCompany() == null || !companyId.equals(current.getCompany().getId()))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to upload for this company");
         }
-
         if (file.getSize() > maxSizeBytes) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File too large. Max allowed = " + maxSizeBytes);
         }
-
         String contentType = Optional.ofNullable(file.getContentType()).orElse("application/octet-stream");
         if (!allowedTypes.contains(contentType)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File type not allowed: " + contentType);
         }
-
         String orig = Optional.ofNullable(file.getOriginalFilename()).orElse("file");
         String ext = orig.contains(".") ? orig.substring(orig.lastIndexOf(".")) : "";
         String storageName = UUID.randomUUID().toString() + ext;
@@ -119,7 +115,6 @@ public class DocumentService {
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not create company directory", e);
         }
-
         Path target = companyDir.resolve(storageName);
         try (InputStream in = file.getInputStream()) {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
@@ -133,6 +128,7 @@ public class DocumentService {
         doc.setContentType(contentType);
         doc.setSize(file.getSize());
         doc.setCompanyId(companyId);
+        doc.setStatus(Status.ACTIVE);
         doc.setUploadedByUserId(current.getId());
         doc.setUploadedAt(Instant.now());
         doc.setDescription(description);
@@ -198,28 +194,28 @@ public class DocumentService {
     }
 
     // ---------- delete ----------
-    public void delete(Long companyId, Long docId) {
-        Document d = docRepo.findById(docId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Document not found"));
+    @Transactional
+    public void softDelete(Long companyId, Long id) {
+        Document doc = docRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
 
-        User current = getCurrentUser();
-
-        if (!isSuperAdmin(current) && (current.getCompany() == null || !companyId.equals(current.getCompany().getId()))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to delete this document");
+        if (!doc.getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Document does not belong to this company");
         }
 
-        if (!d.getCompanyId().equals(companyId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Document does not belong to company");
+        doc.setStatus(Status.INACTIVE);
+        docRepo.save(doc);
+    }
+
+    @Transactional
+    public void hardDelete(Long companyId, Long id) {
+        Document doc = docRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+
+        if (!doc.getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Document does not belong to this company");
         }
 
-        // remove DB record first
-        docRepo.delete(d);
-
-        // then remove file (best-effort)
-        try {
-            Files.deleteIfExists(Paths.get(d.getPath()));
-        } catch (IOException ignored) {
-            // optionally log here. file cleanup can be retried by admin later.
-        }
+        docRepo.delete(doc);
     }
 }
